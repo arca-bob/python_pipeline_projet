@@ -78,5 +78,7 @@ def csv_genrator(donnees):
 
             for ligne in donnees:
                 writer.writerow(ligne)
-
     return True
+
+if __name__ == "__main__":
+    csv_genrator(donnees)

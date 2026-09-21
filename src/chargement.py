@@ -1,19 +1,34 @@
-import csv
 from decimal import Decimal
-from pathlib import Path
 
-def load_csv(path: Path):
+def load_csv(path):
+    v = []
+    i = []
 
-    l = []
+    with open(path, encoding="utf-8") as f:
+        next(f)
 
-    with path.open("r", newline="", encoding="utf-8") as fichier:
-        reader = csv.reader(fichier)
+        for ligne in f:
 
-        next(reader)
+            if not ligne.strip():
+                continue
 
-        for row in reader:
+            cols = ligne.strip().split(",")
 
-            row[6] = Decimal(row[6])
-            l.append(row)
+            try:
 
-    return l
+                if len(cols) != 8:
+                    raise ValueError("Colonnes manquantes")
+
+                date, iban_o, pays_o, banque, iban_d, pays_d, montant, devise = cols
+
+                montant = Decimal(montant)
+                montant_centimes = int(montant * 100)
+                v.append([
+                    date, iban_o, pays_o, banque,
+                    iban_d, pays_d, montant_centimes, devise
+                ])
+
+            except Exception:
+                i.append(ligne)
+
+    return v, i

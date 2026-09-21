@@ -15,8 +15,9 @@ def init_db(db_path: Path):
             iban_destinataire TEXT,
             pays_destinataire TEXT,
             montant TEXT,
-            devise TEXT
-        );""")
+            devise TEXT,
+            UNIQUE(datetime_transaction, iban_origine, iban_destinataire, montant)
+    );""")
 
     cur.execute("""
         CREATE TABLE IF NOT EXISTS iban_origine_somme (
@@ -44,26 +45,26 @@ def insert_data(db_path: Path, lignes, iban_som, banq_som, dest_som):
 
     for row in lignes:
         cur.execute("""
-            INSERT INTO transactions (
+            INSERT OR IGNORE INTO transactions (
                 datetime_transaction, iban_origine, pays_source, banque_source,
                 iban_destinataire, pays_destinataire, montant, devise
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)""", row)
 
     for iban, total in iban_som.items():
         cur.execute("""
-            INSERT INTO iban_origine_somme (iban_origine, total)
+            INSERT OR REPLACE INTO iban_origine_somme (iban_origine, total)
             VALUES (?, ?)
         """, (iban, int(total)))
 
     for banque, total in banq_som.items():
         cur.execute("""
-            INSERT INTO banque_source_somme (banque_source, total)
+            INSERT OR REPLACE INTO banque_source_somme (banque_source, total)
             VALUES (?, ?)
         """, (banque, int(total)))
 
     for dest, total in dest_som.items():
         cur.execute("""
-            INSERT INTO iban_dest_somme (iban_destinataire, total)
+            INSERT OR REPLACE INTO iban_dest_somme (iban_destinataire, total)
             VALUES (?, ?)
         """, (dest, int(total)))
 
